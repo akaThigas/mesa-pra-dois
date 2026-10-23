@@ -88,6 +88,8 @@ export interface CoupleSession {
   coupleId: string;
   currentUserId: string;
   members: CoupleMember[];
+  /** Código para o par entrar no casal (null no modo demonstração). */
+  inviteCode: string | null;
 }
 
 export const PRICE_LEVELS: readonly PriceLevel[] = [1, 2, 3, 4];

@@ -1,6 +1,7 @@
-import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
+import { useId, useState, type FormEvent } from 'react';
 import { membersForDisplay, useCoupleSession } from '@/features/couple/CoupleSessionContext';
 import { moneyToInput, parseMoney, todayIsoDate } from '@/shared/lib/format';
+import { BottomSheet, sheetStyles as form } from '@/shared/ui/BottomSheet';
 import { StarInput } from '@/shared/ui/StarInput';
 import { StarRating } from '@/shared/ui/StarRating';
 import { ratingOf } from '../domain/ratings';
@@ -14,35 +15,17 @@ interface VisitSheetProps {
   onSave: (restaurantId: string, details: VisitDetails) => Promise<void>;
 }
 
-/**
- * Gaveta inferior (bottom sheet) usando o <dialog> nativo:
- * foco preso dentro, Esc fecha e o fundo fica inerte — sem biblioteca.
- */
+/** Registrar ou editar uma visita: nota, gasto, data e observações. */
 export function VisitSheet({ restaurant, onClose, onSave }: VisitSheetProps) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
 
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    if (restaurant && !dialog.open) dialog.showModal();
-    if (!restaurant && dialog.open) dialog.close();
-  }, [restaurant]);
-
   return (
-    <dialog
-      ref={dialogRef}
-      className={styles.sheet}
-      aria-labelledby={titleId}
-      onClose={onClose}
-      // Clique no fundo escuro (fora da gaveta) fecha.
-      onClick={(event) => event.target === event.currentTarget && onClose()}
-    >
+    <BottomSheet open={restaurant !== null} onClose={onClose} labelledBy={titleId}>
       {/* key = id: ao abrir outro restaurante, o formulário nasce limpo. */}
       {restaurant && (
         <VisitForm key={restaurant.id} restaurant={restaurant} titleId={titleId} onCancel={onClose} onSave={onSave} />
       )}
-    </dialog>
+    </BottomSheet>
   );
 }
 
@@ -85,20 +68,19 @@ function VisitForm({ restaurant, titleId, onCancel, onSave }: VisitFormProps) {
       onCancel(); // fecha a gaveta
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : 'Não foi possível salvar. Tente de novo.');
-    } finally {
       setIsSaving(false);
     }
   }
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit} noValidate>
-      <div className={styles.grip} aria-hidden="true" />
+    <form className={form.form} onSubmit={handleSubmit} noValidate>
+      <div className={form.grip} aria-hidden="true" />
       {/* Título neutro: "no/na" dependeria do gênero do nome do lugar. */}
       <div>
-        <h2 id={titleId} className={styles.title}>
+        <h2 id={titleId} className={form.title}>
           {restaurant.name}
         </h2>
-        <p className={styles.subtitle}>Registre como foi a visita.</p>
+        <p className={form.subtitle}>Registre como foi a visita.</p>
       </div>
 
       <StarInput label="Sua nota" value={myRating} onChange={setMyRating} />
@@ -114,12 +96,12 @@ function VisitForm({ restaurant, titleId, onCancel, onSave }: VisitFormProps) {
       })}
 
       <div className={styles.row}>
-        <label className={styles.field}>
-          <span className={styles.label}>Quanto gastaram</span>
+        <label className={form.field}>
+          <span className={form.label}>Quanto gastaram</span>
           <span className={styles.money}>
             <span aria-hidden="true">R$</span>
             <input
-              className={styles.input}
+              className={form.input}
               inputMode="decimal"
               placeholder="0,00"
               value={amount}
@@ -128,10 +110,10 @@ function VisitForm({ restaurant, titleId, onCancel, onSave }: VisitFormProps) {
           </span>
         </label>
 
-        <label className={styles.field}>
-          <span className={styles.label}>Quando</span>
+        <label className={form.field}>
+          <span className={form.label}>Quando</span>
           <input
-            className={styles.input}
+            className={form.input}
             type="date"
             max={todayIsoDate()}
             value={visitedAt}
@@ -141,10 +123,10 @@ function VisitForm({ restaurant, titleId, onCancel, onSave }: VisitFormProps) {
         </label>
       </div>
 
-      <label className={styles.field}>
-        <span className={styles.label}>Observações</span>
+      <label className={form.field}>
+        <span className={form.label}>Observações</span>
         <textarea
-          className={styles.input}
+          className={form.input}
           rows={3}
           maxLength={1000}
           placeholder="O que pedir, o que evitar, se vale voltar…"
@@ -154,16 +136,16 @@ function VisitForm({ restaurant, titleId, onCancel, onSave }: VisitFormProps) {
       </label>
 
       {error && (
-        <p role="alert" className={styles.error}>
+        <p role="alert" className={form.error}>
           {error}
         </p>
       )}
 
-      <div className={styles.buttons}>
-        <button type="button" className={styles.secondary} onClick={onCancel}>
+      <div className={form.buttons}>
+        <button type="button" className={form.secondary} onClick={onCancel}>
           Cancelar
         </button>
-        <button type="submit" className={styles.primary} disabled={isSaving}>
+        <button type="submit" className={form.primary} disabled={isSaving}>
           {isSaving ? 'Salvando…' : 'Salvar visita'}
         </button>
       </div>

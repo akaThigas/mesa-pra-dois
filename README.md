@@ -4,7 +4,7 @@ Diário e planejador gastronômico para um casal: lista "Para Conhecer", lista "
 
 **Stack:** React 19 + TypeScript + Vite · CSS Modules com design tokens · Supabase (Postgres, Auth, Realtime, RLS) · Leaflet + OpenStreetMap · Vitest.
 
-**Recursos:** duas listas, busca e filtros (VR, preço, média 4+), uma nota por pessoa (com média do casal), registro de visita (nota, gasto, data, observações) e mapa com link "Como chegar".
+**Recursos:** login com e-mail e senha · conta de casal com código de convite · adicionar, editar e excluir restaurantes com busca de endereço · duas listas com busca e filtros (VR, preço, média 4+) · uma nota por pessoa (com média do casal) · registro de visita (nota, gasto, data, observações) · mapa com link "Como chegar" · sincronização em tempo real entre os dois.
 
 | Para Conhecer | Já Fomos | Registrar visita | Tema escuro |
 |---|---|---|---|
@@ -14,31 +14,36 @@ Diário e planejador gastronômico para um casal: lista "Para Conhecer", lista "
 
 ```bash
 npm install
-npm run dev        # abre em modo demonstração (dados em memória)
-npm test           # testes das regras de filtro e de tempo real
+npm run dev        # sem .env: modo demonstração (dados fictícios em memória)
+npm test           # testes das regras de domínio
 npm run build      # typecheck + build de produção
 ```
 
 ## Conectar ao Supabase
 
-1. Crie um projeto em supabase.com.
+1. Crie um projeto em supabase.com (plano Free, região São Paulo).
 2. SQL Editor → rode, nesta ordem, `supabase/migrations/001_init.sql` e `002_ratings_and_location.sql`.
-3. Copie `.env.example` para `.env` e preencha URL e chave pública (Project Settings → API).
-4. Implemente o login (próximo passo: `<AuthGate>` em `src/app/App.tsx`). Sem login, o RLS bloqueia a leitura — e é exatamente isso que queremos.
+3. Authentication → URL Configuration: *Site URL* = endereço do app na Vercel; em *Redirect URLs*, adicione também `http://localhost:5173`.
+4. Local: copie `.env.example` para `.env` e preencha `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` (Project Settings → API Keys). Use só a chave **anon/publishable**, nunca a `service_role`.
+5. Vercel: Settings → Environment Variables com as mesmas duas variáveis → Redeploy (o Vite lê as variáveis no build).
+
+Com o Supabase configurado, o app pede login e os dados de exemplo não aparecem.
 
 ## Arquitetura
 
 ```
 src/
-├── app/                      # composição raiz (App)
+├── app/                      # composição raiz (App) e AuthGate: login → casal → app
 ├── pages/HomePage/           # página = conecta hooks a componentes
+├── features/auth/            # login e cadastro
+├── features/couple/          # criar/entrar no casal, convite, sessão do casal (Context)
 ├── features/restaurants/     # tudo da feature junto (feature-first)
 │   ├── types.ts              # modelo de domínio
 │   ├── domain/               # regras puras + testes (sem React, sem banco)
 │   ├── data/                 # Repository: contrato + Supabase + memória
 │   ├── hooks/                # estado e efeitos (useRestaurants, filtros, ações)
 │   └── components/           # apresentação
-├── shared/ui/                # componentes genéricos (Chip, StarRating, SearchField)
+├── shared/ui/                # componentes genéricos (BottomSheet, Chip, StarInput…)
 ├── shared/lib/               # utilitários (formatação, cliente Supabase)
 └── styles/                   # tokens.css (design system) + global.css
 ```

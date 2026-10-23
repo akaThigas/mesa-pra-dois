@@ -115,16 +115,22 @@
 
 .actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-4);
+  gap: 0 var(--space-4);
 }
 
+/* Vale para <a> e <button>: as ações secundárias têm a mesma cara. */
 .link {
   display: inline-flex;
   align-items: center;
   min-height: var(--tap);
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: var(--color-wine);
   font-weight: 600;
+  text-decoration: underline;
   text-underline-offset: 3px;
 }
 

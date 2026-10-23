@@ -13,6 +13,7 @@ import styles from './RestaurantCard.module.css';
 interface RestaurantCardProps {
   restaurant: Restaurant;
   onOpenVisit: (restaurant: Restaurant) => void;
+  onEdit: (restaurant: Restaurant) => void;
 }
 
 export function describePlace({ cuisine, neighborhood }: Pick<Restaurant, 'cuisine' | 'neighborhood'>): string | null {
@@ -25,13 +26,13 @@ export function describePlace({ cuisine, neighborhood }: Pick<Restaurant, 'cuisi
  * picote, e embaixo o "canhoto" com observações e ações.
  * memo: só re-renderiza se ESTE restaurante mudar.
  */
-export const RestaurantCard = memo(function RestaurantCard({ restaurant, onOpenVisit }: RestaurantCardProps) {
+export const RestaurantCard = memo(function RestaurantCard({ restaurant, onOpenVisit, onEdit }: RestaurantCardProps) {
   const { currentUserId } = useCoupleSession();
   const { id, name, status, priceLevel, amountSpent, acceptsVr, notes, visitedAt } = restaurant;
 
   const isVisited = status === 'visited';
   const place = describePlace(restaurant);
-  const actionLabel = !isVisited ? 'Já fomos' : ratingOf(restaurant, currentUserId) === null ? 'Dar minha nota' : 'Editar visita';
+  const actionLabel = !isVisited ? 'Já fomos' : ratingOf(restaurant, currentUserId) === null ? 'Dar minha nota' : 'Atualizar visita';
 
   return (
     <article className={styles.ticket} aria-labelledby={`restaurant-${id}`}>
@@ -74,6 +75,14 @@ export const RestaurantCard = memo(function RestaurantCard({ restaurant, onOpenV
               Como chegar
             </a>
           )}
+          <button
+            type="button"
+            className={styles.link}
+            onClick={() => onEdit(restaurant)}
+            aria-label={`Editar dados de ${name}`}
+          >
+            Editar
+          </button>
         </div>
       </div>
     </article>

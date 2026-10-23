@@ -11,6 +11,7 @@ export const DEMO_SESSION: CoupleSession = {
     { id: DEMO_ME, displayName: 'Você' },
     { id: DEMO_PARTNER, displayName: 'Seu par' },
   ],
+  inviteCode: null,
 };
 
 type SeedInput = Pick<Restaurant, 'name' | 'status'> & Partial<Restaurant>;

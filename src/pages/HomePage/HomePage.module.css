@@ -1,7 +1,50 @@
 .page {
   max-width: var(--page-max);
   margin-inline: auto;
-  padding: var(--space-6) var(--space-4) calc(var(--space-8) + env(safe-area-inset-bottom));
+  /* Espaço extra embaixo para o botão "Adicionar" não cobrir o último cartão */
+  padding: var(--space-6) var(--space-4) calc(96px + env(safe-area-inset-bottom));
+}
+
+.titleRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.signOut {
+  min-height: var(--tap);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-ink-soft);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+/* Botão flutuante, alinhado à coluna do conteúdo mesmo em telas largas */
+.fab {
+  position: fixed;
+  z-index: 2;
+  right: max(var(--space-4), calc((100vw - var(--page-max)) / 2 + var(--space-4)));
+  bottom: calc(var(--space-5) + env(safe-area-inset-bottom));
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 56px;
+  padding: 0 var(--space-5) 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-wine);
+  color: var(--color-on-wine);
+  font-size: var(--text-md);
+  font-weight: 650;
+  box-shadow: 0 6px 20px rgb(122 46 77 / 0.35);
+}
+
+.fabPlus {
+  font-size: 1.5rem;
+  line-height: 1;
 }
 
 .header {

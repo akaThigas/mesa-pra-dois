@@ -12,12 +12,13 @@ interface RestaurantListProps {
   onRetry: () => void;
   onClearFilters: () => void;
   onOpenVisit: (restaurant: Restaurant) => void;
+  onEdit: (restaurant: Restaurant) => void;
 }
 
 const EMPTY_COPY: Record<RestaurantStatus, { title: string; description: string }> = {
   wishlist: {
     title: 'Nenhum lugar na lista ainda',
-    description: 'Adicionem o próximo restaurante que vocês querem provar.',
+    description: 'Toque em “Adicionar” para salvar o próximo restaurante que vocês querem provar.',
   },
   visited: {
     title: 'Nenhuma visita registrada',
@@ -37,6 +38,7 @@ export function RestaurantList({
   onRetry,
   onClearFilters,
   onOpenVisit,
+  onEdit,
 }: RestaurantListProps) {
   if (loadState.kind === 'loading') {
     return (
@@ -82,7 +84,7 @@ export function RestaurantList({
     <ul className={styles.list}>
       {restaurants.map((restaurant) => (
         <li key={restaurant.id}>
-          <RestaurantCard restaurant={restaurant} onOpenVisit={onOpenVisit} />
+          <RestaurantCard restaurant={restaurant} onOpenVisit={onOpenVisit} onEdit={onEdit} />
         </li>
       ))}
     </ul>
