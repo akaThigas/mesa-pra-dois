@@ -1,7 +1,29 @@
 import { describe, expect, it } from 'vitest';
 import { translateAuthError } from './auth/authApi';
 import { normalizeInviteCode } from './couple/coupleApi';
-import { toPlaceResult } from './restaurants/data/geocoding';
+import { buildQueryVariants, toPlaceResult } from './restaurants/data/geocoding';
+
+describe('buildQueryVariants (endereços no formato dos Correios)', () => {
+  it('limpa CEP, "- SP" e traços e tenta do mais exato ao mais genérico', () => {
+    const variants = buildQueryVariants('Rua Pirapora, 218 - Vila Mariana, São Paulo - SP, 04008-060');
+
+    expect(variants).toEqual([
+      { query: 'Rua Pirapora, 218 - Vila Mariana, São Paulo - SP, 04008-060', approximate: false },
+      { query: 'Rua Pirapora, 218, Vila Mariana, São Paulo', approximate: false },
+      { query: 'Rua Pirapora 218, São Paulo', approximate: false },
+      { query: 'Rua Pirapora, São Paulo', approximate: true },
+    ]);
+  });
+
+  it('entende o número junto do nome da rua', () => {
+    const queries = buildQueryVariants('Rua Pirapora 218, São Paulo').map(({ query }) => query);
+    expect(queries).toEqual(['Rua Pirapora 218, São Paulo', 'Rua Pirapora, São Paulo']);
+  });
+
+  it('busca pelo nome do lugar continua sendo uma única tentativa', () => {
+    expect(buildQueryVariants('Ramen Kazoku')).toEqual([{ query: 'Ramen Kazoku', approximate: false }]);
+  });
+});
 
 describe('toPlaceResult (geocoding)', () => {
   it('monta endereço no padrão brasileiro e extrai o bairro', () => {

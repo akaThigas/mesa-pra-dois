@@ -99,7 +99,7 @@ export function AddressSearch({ value, onSelect, suggestion }: AddressSearchProp
           onClick={() => void search()}
           disabled={state.kind === 'loading'}
         >
-          {state.kind === 'loading' ? '…' : 'Buscar'}
+          {state.kind === 'loading' ? 'Buscando…' : 'Buscar'}
         </button>
       </div>
 
@@ -107,7 +107,7 @@ export function AddressSearch({ value, onSelect, suggestion }: AddressSearchProp
 
       {state.kind === 'done' &&
         (state.results.length === 0 ? (
-          <p className={styles.empty}>Nada encontrado. Tente o nome da rua com o bairro.</p>
+          <p className={styles.empty}>Nada encontrado. Tente só a rua e a cidade, por exemplo: Rua Pirapora, São Paulo.</p>
         ) : (
           <ul className={styles.results} aria-label="Resultados da busca">
             {state.results.map((place) => (
@@ -115,6 +115,7 @@ export function AddressSearch({ value, onSelect, suggestion }: AddressSearchProp
                 <button type="button" className={styles.result} onClick={() => onSelect(place)}>
                   <strong>{place.label}</strong>
                   <span>{place.address}</span>
+                  {place.approximate && <em className={styles.approximate}>Número não encontrado: o pin fica na rua</em>}
                 </button>
               </li>
             ))}
