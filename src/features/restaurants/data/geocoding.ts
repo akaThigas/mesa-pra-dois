@@ -5,6 +5,7 @@
  * Regra de uso deles: no máximo 1 busca por segundo e sem busca
  * automática a cada tecla. Por isso a busca é feita só no botão "Buscar".
  */
+import { normalizeText } from '../domain/filters';
 
 export interface PlaceResult {
   /** Nome curto para a lista de resultados */
@@ -12,30 +13,37 @@ export interface PlaceResult {
   /** Endereço legível que fica salvo no restaurante */
   address: string;
   neighborhood: string | null;
+  city: string | null;
   latitude: number;
   longitude: number;
-  /** true quando o número não foi encontrado e o pin fica na rua */
+  /** O resultado aponta para o imóvel exato (tem número)? */
+  hasHouseNumber: boolean;
+  /** true quando a pessoa digitou um número que não foi encontrado: o pin fica na rua */
   approximate?: boolean;
 }
 
-export interface QueryVariant {
-  query: string;
-  /** Esta tentativa já descartou o número do imóvel? */
-  approximate: boolean;
+/** Endereço digitado, separado em partes. */
+export interface ParsedAddress {
+  original: string;
+  /** Sem CEP, sem "- SP" e com traços trocados por vírgula */
+  cleaned: string;
+  street: string;
+  houseNumber: string | null;
+  city: string | null;
 }
+
+/** Uma tentativa de busca: texto livre ou campos separados (estruturada). */
+export type SearchAttempt =
+  | { kind: 'free'; query: string }
+  | { kind: 'structured'; street: string; city: string };
 
 const CEP = /\b\d{5}-?\d{3}\b/g;
 const STATE_SUFFIX = /\s+-\s+[A-Z]{2}\b/g; // " - SP"
 const DASH_SEPARATOR = /\s+-\s+/g; // "218 - Vila Mariana"
 const HOUSE_NUMBER = /^\d+[a-zA-Z]?$/;
 
-/**
- * O Nominatim se perde com o formato completo dos Correios
- * ("Rua X, 218 - Bairro, Cidade - SP, 00000-000") e muitas vezes não
- * conhece o número do prédio. Geramos tentativas do mais exato ao mais
- * genérico; quem chama usa a primeira que encontrar algo.
- */
-export function buildQueryVariants(input: string): QueryVariant[] {
+/** "Rua Pirapora, 218 - Vila Mariana, São Paulo - SP, 04008-060" → partes. */
+export function parseAddress(input: string): ParsedAddress {
   const original = input.trim();
   const parts = original
     .replace(CEP, '')
@@ -57,23 +65,36 @@ export function buildQueryVariants(input: string): QueryVariant[] {
     rest = rest.slice(1);
   }
 
-  const city = rest.at(-1) ?? null;
-  const candidates: (QueryVariant | null)[] = [
-    { query: original, approximate: false },
-    { query: parts.join(', '), approximate: false },
-    houseNumber && city ? { query: `${street} ${houseNumber}, ${city}`, approximate: false } : null,
-    city ? { query: `${street}, ${city}`, approximate: houseNumber !== null } : null,
-  ];
+  return { original, cleaned: parts.join(', '), street, houseNumber, city: rest.at(-1) ?? null };
+}
 
-  // Remove vazias e repetidas, mantendo a ordem (da mais exata para a mais genérica).
-  const seen = new Set<string>();
-  return candidates.filter((variant): variant is QueryVariant => {
-    if (!variant || variant.query.length < 3) return false;
-    const key = variant.query.toLowerCase();
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+/**
+ * Tentativas da mais exata à mais genérica. Com cidade conhecida, usamos a
+ * busca ESTRUTURADA (rua e cidade em campos separados): no texto livre o
+ * Nominatim confunde a cidade "São Paulo" com o ESTADO de São Paulo.
+ */
+export function buildSearchAttempts({ original, cleaned, street, houseNumber, city }: ParsedAddress): SearchAttempt[] {
+  const attempts: SearchAttempt[] = [];
+  if (city) {
+    if (houseNumber) attempts.push({ kind: 'structured', street: `${houseNumber} ${street}`, city });
+    attempts.push({ kind: 'structured', street, city });
+  }
+  attempts.push({ kind: 'free', query: original });
+  if (cleaned !== original) attempts.push({ kind: 'free', query: cleaned });
+
+  return attempts.filter((attempt) => (attempt.kind === 'free' ? attempt.query.length >= 3 : attempt.street.length >= 3));
+}
+
+/**
+ * Mantém só os resultados da cidade digitada (se houver algum) e marca
+ * como aproximados os que não acharam o número que a pessoa escreveu.
+ */
+export function rankResults(results: readonly PlaceResult[], { city, houseNumber }: ParsedAddress): PlaceResult[] {
+  const sameCity = city
+    ? results.filter((place) => place.city !== null && normalizeText(place.city) === normalizeText(city))
+    : [];
+  const chosen = sameCity.length > 0 ? sameCity : [...results];
+  return chosen.map((place) => ({ ...place, approximate: houseNumber !== null && !place.hasHouseNumber }));
 }
 
 /** Formato (parcial) da resposta do Nominatim com addressdetails=1. */
@@ -110,7 +131,15 @@ export function toPlaceResult(item: NominatimItem): PlaceResult {
   const address = [street, neighborhood, city].filter(Boolean).join(' - ') || item.display_name;
   const label = item.name || street || item.display_name.split(',')[0] || item.display_name;
 
-  return { label, address, neighborhood, latitude: Number(item.lat), longitude: Number(item.lon) };
+  return {
+    label,
+    address,
+    neighborhood,
+    city,
+    latitude: Number(item.lat),
+    longitude: Number(item.lon),
+    hasHouseNumber: Boolean(parts.house_number),
+  };
 }
 
 /** Espera respeitando o cancelamento (se a pessoa fechar a gaveta, para tudo). */
@@ -124,26 +153,42 @@ function wait(ms: number, signal?: AbortSignal): Promise<void> {
   });
 }
 
-/** Tenta as variantes em ordem, com 1,1 s entre elas (regra de uso do Nominatim). */
-export async function searchPlaces(query: string, signal?: AbortSignal): Promise<PlaceResult[]> {
-  const variants = buildQueryVariants(query);
-  for (const [index, variant] of variants.entries()) {
+/**
+ * Tenta em ordem, com 1,1 s entre as tentativas (regra do Nominatim).
+ * Para na primeira que achar algo NA CIDADE digitada; se nenhuma achar,
+ * devolve o primeiro resultado que apareceu (melhor que nada).
+ */
+export async function searchPlaces(input: string, signal?: AbortSignal): Promise<PlaceResult[]> {
+  const parsed = parseAddress(input);
+  let fallback: PlaceResult[] = [];
+
+  for (const [index, attempt] of buildSearchAttempts(parsed).entries()) {
     if (index > 0) await wait(1100, signal);
-    const results = await fetchNominatim(variant.query, signal);
-    if (results.length > 0) return results.map((place) => ({ ...place, approximate: variant.approximate }));
+    const results = await fetchNominatim(attempt, signal);
+    if (results.length === 0) continue;
+
+    const ranked = rankResults(results, parsed);
+    const inCity = !parsed.city || ranked.some((place) => place.city && normalizeText(place.city) === normalizeText(parsed.city!));
+    if (inCity) return ranked;
+    if (fallback.length === 0) fallback = ranked;
   }
-  return [];
+  return fallback;
 }
 
-async function fetchNominatim(query: string, signal?: AbortSignal): Promise<PlaceResult[]> {
+async function fetchNominatim(attempt: SearchAttempt, signal?: AbortSignal): Promise<PlaceResult[]> {
   const params = new URLSearchParams({
-    q: query.trim(),
     format: 'jsonv2',
     addressdetails: '1',
     limit: '5',
     countrycodes: 'br',
     'accept-language': 'pt-BR',
   });
+  if (attempt.kind === 'free') {
+    params.set('q', attempt.query);
+  } else {
+    params.set('street', attempt.street);
+    params.set('city', attempt.city);
+  }
 
   const response = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, { signal });
   if (!response.ok) throw new Error('A busca de endereço não respondeu agora. Tente de novo em instantes.');

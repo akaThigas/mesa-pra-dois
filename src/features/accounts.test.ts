@@ -1,27 +1,65 @@
 import { describe, expect, it } from 'vitest';
 import { translateAuthError } from './auth/authApi';
 import { normalizeInviteCode } from './couple/coupleApi';
-import { buildQueryVariants, toPlaceResult } from './restaurants/data/geocoding';
+import {
+  buildSearchAttempts,
+  parseAddress,
+  rankResults,
+  toPlaceResult,
+  type PlaceResult,
+} from './restaurants/data/geocoding';
 
-describe('buildQueryVariants (endereços no formato dos Correios)', () => {
-  it('limpa CEP, "- SP" e traços e tenta do mais exato ao mais genérico', () => {
-    const variants = buildQueryVariants('Rua Pirapora, 218 - Vila Mariana, São Paulo - SP, 04008-060');
+const CORREIOS = 'Rua Pirapora, 218 - Vila Mariana, São Paulo - SP, 04008-060';
 
-    expect(variants).toEqual([
-      { query: 'Rua Pirapora, 218 - Vila Mariana, São Paulo - SP, 04008-060', approximate: false },
-      { query: 'Rua Pirapora, 218, Vila Mariana, São Paulo', approximate: false },
-      { query: 'Rua Pirapora 218, São Paulo', approximate: false },
-      { query: 'Rua Pirapora, São Paulo', approximate: true },
+describe('parseAddress / buildSearchAttempts (formato dos Correios)', () => {
+  it('separa rua, número e cidade, ignorando CEP e "- SP"', () => {
+    expect(parseAddress(CORREIOS)).toEqual({
+      original: CORREIOS,
+      cleaned: 'Rua Pirapora, 218, Vila Mariana, São Paulo',
+      street: 'Rua Pirapora',
+      houseNumber: '218',
+      city: 'São Paulo',
+    });
+    expect(parseAddress('Rua Pirapora 218, São Paulo')).toMatchObject({ street: 'Rua Pirapora', houseNumber: '218' });
+  });
+
+  it('com cidade, começa pela busca estruturada (rua e cidade separadas)', () => {
+    expect(buildSearchAttempts(parseAddress(CORREIOS))).toEqual([
+      { kind: 'structured', street: '218 Rua Pirapora', city: 'São Paulo' },
+      { kind: 'structured', street: 'Rua Pirapora', city: 'São Paulo' },
+      { kind: 'free', query: CORREIOS },
+      { kind: 'free', query: 'Rua Pirapora, 218, Vila Mariana, São Paulo' },
     ]);
   });
 
-  it('entende o número junto do nome da rua', () => {
-    const queries = buildQueryVariants('Rua Pirapora 218, São Paulo').map(({ query }) => query);
-    expect(queries).toEqual(['Rua Pirapora 218, São Paulo', 'Rua Pirapora, São Paulo']);
+  it('busca pelo nome do lugar continua sendo uma única tentativa', () => {
+    expect(buildSearchAttempts(parseAddress('Ramen Kazoku'))).toEqual([{ kind: 'free', query: 'Ramen Kazoku' }]);
+  });
+});
+
+describe('rankResults', () => {
+  const place = (city: string, hasHouseNumber = false): PlaceResult => ({
+    label: 'Rua Pirapora',
+    address: `Rua Pirapora - ${city}`,
+    neighborhood: null,
+    city,
+    latitude: 0,
+    longitude: 0,
+    hasHouseNumber,
   });
 
-  it('busca pelo nome do lugar continua sendo uma única tentativa', () => {
-    expect(buildQueryVariants('Ramen Kazoku')).toEqual([{ query: 'Ramen Kazoku', approximate: false }]);
+  it('com a cidade digitada, descarta ruas homônimas de outras cidades (o caso do print)', () => {
+    const results = [place('São José dos Campos'), place('Catanduva'), place('Santo André'), place('São Paulo')];
+
+    const ranked = rankResults(results, parseAddress(CORREIOS));
+
+    expect(ranked.map(({ city }) => city)).toEqual(['São Paulo']);
+    expect(ranked[0]?.approximate).toBe(true); // digitou 218, mas o resultado é só a rua
+  });
+
+  it('número encontrado não é aproximado; sem nenhum da cidade, mostra todos', () => {
+    expect(rankResults([place('São Paulo', true)], parseAddress(CORREIOS))[0]?.approximate).toBe(false);
+    expect(rankResults([place('Catanduva')], parseAddress(CORREIOS))).toHaveLength(1);
   });
 });
 
@@ -39,8 +77,10 @@ describe('toPlaceResult (geocoding)', () => {
       label: 'Kazoku',
       address: 'Rua Galvão Bueno, 50 - Liberdade - São Paulo',
       neighborhood: 'Liberdade',
+      city: 'São Paulo',
       latitude: -23.5587,
       longitude: -46.6347,
+      hasHouseNumber: true,
     });
   });
 
