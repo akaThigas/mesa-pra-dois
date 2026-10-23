@@ -92,7 +92,9 @@ function RestaurantForm({ target, titleId, onClose, onCreate, onUpdate, onDelete
       address: place?.address ?? null,
       latitude: place?.latitude ?? null,
       longitude: place?.longitude ?? null,
-      googlePlaceId: place?.googlePlaceId ?? null,
+      // Só envia quando existe: assim o app funciona mesmo antes da migração 004
+      // (sem chave do Google, esse campo nunca é preenchido).
+      ...(place?.googlePlaceId ? { googlePlaceId: place.googlePlaceId } : {}),
     } satisfies RestaurantPatch;
 
     void runAndClose(() =>
