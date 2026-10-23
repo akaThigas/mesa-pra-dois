@@ -1,0 +1,19 @@
+.list {
+  display: grid;
+  gap: var(--space-3);
+  padding: 0;
+  list-style: none;
+}
+
+.skeleton {
+  height: 128px;
+  border-radius: var(--radius-ticket);
+  background: var(--color-surface-sunken);
+  animation: pulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+  to {
+    opacity: 0.5;
+  }
+}

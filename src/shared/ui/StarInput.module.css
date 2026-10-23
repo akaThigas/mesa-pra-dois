@@ -1,0 +1,43 @@
+.fieldset {
+  border: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.legend {
+  padding: 0;
+  margin-bottom: var(--space-1);
+  font-weight: 600;
+  font-size: var(--text-sm);
+}
+
+.stars {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.star {
+  display: grid;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  border-radius: var(--radius-control);
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--color-line);
+  cursor: pointer;
+  transition: color 120ms ease, transform 120ms ease;
+}
+
+.star[data-filled='true'] {
+  color: var(--color-saffron);
+}
+
+.star:active {
+  transform: scale(0.9);
+}
+
+.star:has(input:focus-visible) {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}

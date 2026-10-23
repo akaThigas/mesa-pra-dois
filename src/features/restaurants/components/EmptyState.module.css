@@ -1,0 +1,31 @@
+.empty {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-4);
+  border: 2px dashed var(--color-line);
+  border-radius: var(--radius-ticket);
+}
+
+.title {
+  font-weight: 650;
+  font-size: var(--text-lg);
+  line-height: var(--leading-tight);
+}
+
+.description {
+  color: var(--color-ink-soft);
+  font-size: var(--text-sm);
+  max-width: 48ch;
+}
+
+.empty button {
+  margin-top: var(--space-2);
+  min-height: var(--tap);
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--color-wine);
+  color: var(--color-on-wine);
+  font-weight: 600;
+}

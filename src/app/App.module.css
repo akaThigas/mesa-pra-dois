@@ -1,0 +1,5 @@
+.pending {
+  max-width: var(--page-max);
+  margin: var(--space-8) auto;
+  padding-inline: var(--space-4);
+}

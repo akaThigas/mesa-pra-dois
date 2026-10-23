@@ -1,0 +1,15 @@
+.stars {
+  display: inline-flex;
+  gap: 1px;
+  font-size: var(--text-md);
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.filled {
+  color: var(--color-saffron);
+}
+
+.empty {
+  color: var(--color-line);
+}

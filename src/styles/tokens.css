@@ -1,0 +1,70 @@
+/*
+ * Design tokens — "porcelana & vinho"
+ * Componentes usam SÓ estas variáveis, nunca hex soltos.
+ * Trocar o tema = mexer apenas neste arquivo.
+ */
+:root {
+  color-scheme: light dark;
+
+  /* Cor */
+  --color-bg: #eef1ee;            /* porcelana: fundo da página */
+  --color-surface: #ffffff;       /* a comanda (cartão) */
+  --color-surface-sunken: #e3e8e4;/* trilho das abas, skeleton */
+  --color-line: #cbd3ce;          /* bordas e picote */
+  --color-ink: #1f2a2e;           /* texto principal */
+  --color-ink-soft: #55625f;      /* texto secundário (contraste AA) */
+  --color-wine: #7a2e4d;          /* ação primária, valores gastos */
+  --color-wine-soft: #f3e6ec;
+  --color-on-wine: #ffffff;
+  --color-saffron: #b07d0b;       /* estrelas */
+  --color-basil: #2f6b3a;         /* selo "Aceita VR" */
+  --color-basil-soft: #e1ede2;
+  --color-danger: #a1281f;
+  --color-focus: #1d5fd1;
+
+  /* Tipografia: uma família, com eixo óptico (opsz) */
+  --font-sans: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.1875rem;
+  --text-display: clamp(2rem, 9vw, 2.75rem);
+  --leading-tight: 1.15;
+  --leading-body: 1.5;
+
+  /* Espaçamento: escala de 4px */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Raios por hierarquia (não o mesmo em tudo) */
+  --radius-ticket: 6px;
+  --radius-control: 10px;
+  --radius-pill: 999px;
+
+  --tap: 44px;          /* alvo mínimo de toque */
+  --page-max: 640px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #131a1c;
+    --color-surface: #1c2427;
+    --color-surface-sunken: #0f1416;
+    --color-line: #33403f;
+    --color-ink: #e8eeeb;
+    --color-ink-soft: #a3b1ac;
+    --color-wine: #e8a0bd;
+    --color-wine-soft: #3a2430;
+    --color-on-wine: #2a0f1c;
+    --color-saffron: #e3b23c;
+    --color-basil: #8fcb9b;
+    --color-basil-soft: #1e3324;
+    --color-danger: #f08a80;
+    --color-focus: #8ab4ff;
+  }
+}

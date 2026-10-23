@@ -1,0 +1,46 @@
+.wrapper {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.map {
+  /* isolation cria um contexto de empilhamento: os z-index altos do
+     Leaflet ficam "presos" aqui e não passam por cima do topo fixo. */
+  isolation: isolate;
+  height: min(64dvh, 560px);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-ticket);
+  background: var(--color-surface-sunken);
+}
+
+.pin {
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.35);
+}
+
+.wishlist {
+  background: var(--color-wine);
+}
+
+.visited {
+  background: var(--color-basil);
+}
+
+.popupName {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: var(--text-md);
+  font-weight: 700;
+}
+
+.popupPlace {
+  display: block;
+  margin-bottom: var(--space-1);
+  color: #55625f;
+}
+
+.note {
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+}

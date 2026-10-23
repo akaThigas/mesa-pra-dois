@@ -1,0 +1,19 @@
+.level,
+.spent {
+  flex: none;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.level {
+  letter-spacing: 0.04em;
+  color: var(--color-ink);
+}
+
+.dim {
+  color: var(--color-line);
+}
+
+.spent {
+  color: var(--color-wine);
+}
