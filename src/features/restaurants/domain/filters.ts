@@ -1,4 +1,4 @@
-import type { Category, PriceLevel, Rating, Restaurant, RestaurantStatus } from '../types';
+import { categorySearchTerms, type Category, type PriceLevel, type Rating, type Restaurant, type RestaurantStatus } from '../types';
 import { averageRating } from './ratings';
 
 /*
@@ -61,8 +61,9 @@ const bySearch = (search: string): Predicate => {
   const term = normalizeText(search);
   if (!term) return () => true;
 
-  return ({ name, cuisine, neighborhood, notes }) =>
-    [name, cuisine, neighborhood, notes].some(
+  // O tipo do lugar também é pesquisável: "bar" ou "bares" encontra todos os bares.
+  return ({ name, category, cuisine, neighborhood, notes }) =>
+    [name, ...categorySearchTerms(category), cuisine, neighborhood, notes].some(
       (field) => field != null && normalizeText(field).includes(term),
     );
 };

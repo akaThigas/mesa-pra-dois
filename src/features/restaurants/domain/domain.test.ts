@@ -136,6 +136,17 @@ describe('categorias', () => {
     expect(countByCategory(list, 'visited')).toEqual({ cafe: 1 });
   });
 
+  it('a busca encontra pelo tipo, no singular ou plural e sem acento', () => {
+    const bar = makeRestaurant({ name: 'Boteco do Zé', category: 'bar' });
+    const cafe = makeRestaurant({ name: 'Grão Torrado', category: 'cafe' });
+    const restaurant = makeRestaurant({ name: 'Cantina', category: 'restaurante' });
+    const list = [bar, cafe, restaurant];
+
+    expect(filterRestaurants(list, { ...DEFAULT_FILTERS, search: 'bar' })).toEqual([bar]);
+    expect(filterRestaurants(list, { ...DEFAULT_FILTERS, search: 'Bares' })).toEqual([bar]);
+    expect(filterRestaurants(list, { ...DEFAULT_FILTERS, search: 'cafe' })).toEqual([cafe]);
+  });
+
   it('categoria escolhida conta como filtro ativo', () => {
     expect(hasActiveFilters({ ...DEFAULT_FILTERS, category: 'doceria' })).toBe(true);
   });

@@ -79,7 +79,7 @@ export function HomePage({ onSignOut }: HomePageProps) {
       <div className={styles.controls}>
         <SearchField
           label="Buscar restaurantes"
-          placeholder="Nome, bairro, prato…"
+          placeholder="Nome, tipo, bairro, prato…"
           value={filters.search}
           onChange={actions.setSearch}
         />

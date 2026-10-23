@@ -18,6 +18,12 @@ export function categoryLabel(category: Category): string {
   return CATEGORIES.find(({ value }) => value === category)?.label ?? 'Outro';
 }
 
+/** Palavras pelas quais a categoria é encontrada na busca ("bar", "bares"). */
+export function categorySearchTerms(category: Category): string[] {
+  const entry = CATEGORIES.find(({ value }) => value === category);
+  return entry ? [entry.label, entry.plural] : [];
+}
+
 export function isCategory(value: unknown): value is Category {
   return CATEGORIES.some((entry) => entry.value === value);
 }
