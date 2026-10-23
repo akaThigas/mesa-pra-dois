@@ -22,6 +22,8 @@ export interface PlaceResult {
   approximate?: boolean;
   /** Identificador do Google (só quando a busca foi feita pelo Google) */
   googlePlaceId?: string | null;
+  /** O resultado é um estabelecimento (restaurante, bar...)? Se sim, o nome pode preencher o formulário. */
+  isEstablishment?: boolean;
 }
 
 /** Endereço digitado, separado em partes. */

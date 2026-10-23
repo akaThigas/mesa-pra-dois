@@ -41,5 +41,6 @@ export function toPlaceResultFromGoogle(place: GooglePlaceLike, label: string): 
     longitude: place.location.lng(),
     hasHouseNumber: component(place, 'street_number') !== null,
     googlePlaceId: place.id,
+    isEstablishment: true,
   };
 }

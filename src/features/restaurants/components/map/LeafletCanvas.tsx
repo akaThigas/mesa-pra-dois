@@ -2,6 +2,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { useEffect, useMemo } from 'react';
 import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
+import { GEOAPIFY_ATTRIBUTION, geoapifyApiKey, geoapifyTileUrl } from '@/shared/lib/geoapify';
 import type { RestaurantStatus } from '../../types';
 import styles from '../MapView.module.css';
 import { PlacePopup } from './PlacePopup';
@@ -34,16 +35,20 @@ function FitToPins({ points }: { points: LocatedRestaurant[] }) {
   return null;
 }
 
-/** Mapa do OpenStreetMap: usado quando não há chave do Google configurada. */
+/** Mapa com Leaflet: visual do Geoapify (com chave) ou do OpenStreetMap (sem chave). */
 export default function LeafletCanvas({ restaurants, status }: MapCanvasProps) {
   const icon = useMemo(() => pinIcon(status), [status]);
 
   return (
     <MapContainer center={FALLBACK_CENTER} zoom={12} className={styles.map} scrollWheelZoom={false}>
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
+      {geoapifyApiKey ? (
+        <TileLayer attribution={GEOAPIFY_ATTRIBUTION} url={geoapifyTileUrl(geoapifyApiKey)} maxZoom={20} />
+      ) : (
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+      )}
       <FitToPins points={restaurants} />
       {restaurants.map((restaurant) => (
         <Marker key={restaurant.id} position={[restaurant.latitude, restaurant.longitude]} icon={icon} title={restaurant.name}>

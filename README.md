@@ -29,9 +29,13 @@ npm run build      # typecheck + build de produção
 
 Com o Supabase configurado, o app pede login e os dados de exemplo não aparecem.
 
+## Geoapify (opcional, recomendado)
+
+Com `VITE_GEOAPIFY_API_KEY`, a busca de endereço vira autocompletar (enquanto digita) e o mapa usa o visual do Geoapify. Plano grátis: 3.000 créditos/dia, sem cartão; cada busca = 1 crédito, cada quadradinho do mapa = 0,25. Restrinja a chave aos sites do app no painel do Geoapify.
+
 ## Google Maps (opcional)
 
-Com `VITE_GOOGLE_MAPS_API_KEY` e `VITE_GOOGLE_MAP_ID`, a busca de endereço vira autocompletar do Google Places (API nova) e o mapa passa a ser o do Google. Sem elas, busca e mapa usam o OpenStreetMap.
+Com `VITE_GOOGLE_MAPS_API_KEY` e `VITE_GOOGLE_MAP_ID`, a busca de endereço vira autocompletar do Google Places (API nova) e o mapa passa a ser o do Google. Tem prioridade sobre o Geoapify. Sem nenhuma chave, busca e mapa usam o OpenStreetMap.
 
 - APIs a ativar no Google Cloud: **Places API (New)** e **Maps JavaScript API**
 - Restrinja a chave por site (`https://SEU-APP.vercel.app/*`, `http://localhost:5173/*`) e às duas APIs

@@ -9,6 +9,7 @@ import {
   type PlaceResult,
 } from './restaurants/data/geocoding';
 import { toPlaceResultFromGoogle } from './restaurants/data/googlePlaces';
+import { toPlaceResultFromGeoapify } from './restaurants/data/geoapify';
 import { directionsUrl } from '@/shared/lib/maps';
 
 const CORREIOS = 'Rua Pirapora, 218 - Vila Mariana, São Paulo - SP, 04008-060';
@@ -68,11 +69,54 @@ describe('toPlaceResultFromGoogle', () => {
       longitude: -46.6433,
       hasHouseNumber: true,
       googlePlaceId: 'ChIJ123',
+      isEstablishment: true,
     });
   });
 
   it('sem localização não serve para o mapa', () => {
     expect(toPlaceResultFromGoogle({ id: 'x', location: null }, 'X')).toBeNull();
+  });
+});
+
+describe('toPlaceResultFromGeoapify', () => {
+  it('estabelecimento: usa o nome como rótulo e marca para preencher o formulário', () => {
+    const place = toPlaceResultFromGeoapify({
+      lat: -23.5795,
+      lon: -46.6433,
+      name: 'Z Deli Sandwich Shop',
+      street: 'Rua Pirapora',
+      housenumber: '218',
+      suburb: 'Vila Mariana',
+      city: 'São Paulo',
+      result_type: 'amenity',
+      formatted: 'Z Deli Sandwich Shop, Rua Pirapora 218, São Paulo - SP, Brasil',
+    });
+
+    expect(place).toEqual({
+      label: 'Z Deli Sandwich Shop',
+      address: 'Rua Pirapora, 218 - Vila Mariana - São Paulo',
+      neighborhood: 'Vila Mariana',
+      city: 'São Paulo',
+      latitude: -23.5795,
+      longitude: -46.6433,
+      hasHouseNumber: true,
+      isEstablishment: true,
+    });
+  });
+
+  it('endereço comum: rótulo é a linha do endereço e não preenche o nome', () => {
+    const place = toPlaceResultFromGeoapify({
+      lat: 1,
+      lon: 2,
+      street: 'Rua Pirapora',
+      city: 'São Paulo',
+      address_line1: 'Rua Pirapora',
+      result_type: 'street',
+    });
+
+    expect(place.label).toBe('Rua Pirapora');
+    expect(place.isEstablishment).toBe(false);
+    expect(place.hasHouseNumber).toBe(false);
   });
 });
 

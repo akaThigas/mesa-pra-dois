@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { geoapifyApiKey } from '@/shared/lib/geoapify';
 import { googleMapsConfig } from '@/shared/lib/googleMaps';
 import { sheetStyles as form } from '@/shared/ui/BottomSheet';
 import { searchPlaces, type PlaceResult } from '../data/geocoding';
 import styles from './AddressSearch.module.css';
+import { GeoapifyPlaceSearch } from './GeoapifyPlaceSearch';
 import { GooglePlaceSearch } from './GooglePlaceSearch';
 
 export interface SelectedPlace {
@@ -45,11 +47,10 @@ export function AddressSearch({ value, onSelect, suggestion }: AddressSearchProp
     );
   }
 
-  return googleMapsConfig ? (
-    <GooglePlaceSearch onSelect={onSelect} initialQuery={suggestion} />
-  ) : (
-    <NominatimSearch onSelect={onSelect} suggestion={suggestion} />
-  );
+  // Ordem de preferência: Google (se configurado) → Geoapify → OpenStreetMap.
+  if (googleMapsConfig) return <GooglePlaceSearch onSelect={onSelect} initialQuery={suggestion} />;
+  if (geoapifyApiKey) return <GeoapifyPlaceSearch apiKey={geoapifyApiKey} onSelect={onSelect} initialQuery={suggestion} />;
+  return <NominatimSearch onSelect={onSelect} suggestion={suggestion} />;
 }
 
 /** Busca pelo OpenStreetMap (Nominatim): só no botão, por regra de uso deles. */

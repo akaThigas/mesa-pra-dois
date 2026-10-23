@@ -173,7 +173,7 @@ function RestaurantForm({ target, titleId, onClose, onCreate, onUpdate, onDelete
         onSelect={(selected) => {
           setPlace(selected);
           // Preenche nome e bairro sozinhos, sem apagar o que a pessoa já digitou.
-          if (selected?.googlePlaceId && !name.trim()) setName(selected.label);
+          if (selected?.isEstablishment && !name.trim()) setName(selected.label);
           if (selected?.neighborhood && !neighborhood.trim()) setNeighborhood(selected.neighborhood);
         }}
       />
