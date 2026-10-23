@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { googleMapsConfig } from '@/shared/lib/googleMaps';
 import { sheetStyles as form } from '@/shared/ui/BottomSheet';
 import { searchPlaces, type PlaceResult } from '../data/geocoding';
 import styles from './AddressSearch.module.css';
+import { GooglePlaceSearch } from './GooglePlaceSearch';
 
 export interface SelectedPlace {
   address: string;
   latitude: number;
   longitude: number;
+  googlePlaceId?: string | null;
 }
 
 interface AddressSearchProps {
@@ -25,8 +28,32 @@ type SearchState =
 /**
  * Campo de endereço com busca. Dois estados visuais:
  * já tem endereço escolhido (mostra + "Trocar") ou está buscando.
+ * A busca usa o Google quando há chave configurada; senão, o OpenStreetMap.
  */
 export function AddressSearch({ value, onSelect, suggestion }: AddressSearchProps) {
+  if (value) {
+    return (
+      <div className={form.field}>
+        <span className={form.label}>Endereço</span>
+        <div className={styles.selected}>
+          <p className={styles.selectedText}>{value.address}</p>
+          <button type="button" className={form.textButton} onClick={() => onSelect(null)}>
+            Trocar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return googleMapsConfig ? (
+    <GooglePlaceSearch onSelect={onSelect} initialQuery={suggestion} />
+  ) : (
+    <NominatimSearch onSelect={onSelect} suggestion={suggestion} />
+  );
+}
+
+/** Busca pelo OpenStreetMap (Nominatim): só no botão, por regra de uso deles. */
+function NominatimSearch({ onSelect, suggestion }: Omit<AddressSearchProps, 'value'>) {
   const [query, setQuery] = useState('');
   const [state, setState] = useState<SearchState>({ kind: 'idle' });
   const abortRef = useRef<AbortController | null>(null);
@@ -61,20 +88,6 @@ export function AddressSearch({ value, onSelect, suggestion }: AddressSearchProp
     if (event.key !== 'Enter') return;
     event.preventDefault();
     void search();
-  }
-
-  if (value) {
-    return (
-      <div className={form.field}>
-        <span className={form.label}>Endereço</span>
-        <div className={styles.selected}>
-          <p className={styles.selectedText}>{value.address}</p>
-          <button type="button" className={form.textButton} onClick={() => onSelect(null)}>
-            Trocar
-          </button>
-        </div>
-      </div>
-    );
   }
 
   return (

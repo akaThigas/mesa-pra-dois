@@ -69,7 +69,7 @@ export const RestaurantCard = memo(function RestaurantCard({ restaurant, onOpenV
           {hasCoordinates(restaurant) && (
             <a
               className={styles.link}
-              href={directionsUrl(restaurant.latitude, restaurant.longitude)}
+              href={directionsUrl(restaurant.latitude, restaurant.longitude, restaurant)}
               target="_blank"
               rel="noreferrer"
             >

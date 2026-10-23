@@ -32,6 +32,7 @@ function seed(index: number, data: SeedInput): Restaurant {
     address: null,
     latitude: null,
     longitude: null,
+    googlePlaceId: null,
     visitedAt: null,
     createdBy: DEMO_ME,
     createdAt,

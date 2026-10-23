@@ -53,7 +53,12 @@ function RestaurantForm({ target, titleId, onClose, onCreate, onUpdate, onDelete
   const [notes, setNotes] = useState(editing?.notes ?? '');
   const [place, setPlace] = useState<SelectedPlace | null>(
     editing?.address && editing.latitude !== null && editing.longitude !== null
-      ? { address: editing.address, latitude: editing.latitude, longitude: editing.longitude }
+      ? {
+          address: editing.address,
+          latitude: editing.latitude,
+          longitude: editing.longitude,
+          googlePlaceId: editing.googlePlaceId,
+        }
       : null,
   );
   const [error, setError] = useState<string | null>(null);
@@ -87,6 +92,7 @@ function RestaurantForm({ target, titleId, onClose, onCreate, onUpdate, onDelete
       address: place?.address ?? null,
       latitude: place?.latitude ?? null,
       longitude: place?.longitude ?? null,
+      googlePlaceId: place?.googlePlaceId ?? null,
     } satisfies RestaurantPatch;
 
     void runAndClose(() =>
@@ -164,7 +170,8 @@ function RestaurantForm({ target, titleId, onClose, onCreate, onUpdate, onDelete
         suggestion={name.trim()}
         onSelect={(selected) => {
           setPlace(selected);
-          // Preenche o bairro sozinho, sem apagar o que a pessoa já digitou.
+          // Preenche nome e bairro sozinhos, sem apagar o que a pessoa já digitou.
+          if (selected?.googlePlaceId && !name.trim()) setName(selected.label);
           if (selected?.neighborhood && !neighborhood.trim()) setNeighborhood(selected.neighborhood);
         }}
       />

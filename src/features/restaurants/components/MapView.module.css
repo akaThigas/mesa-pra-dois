@@ -19,6 +19,25 @@
   box-shadow: 0 1px 4px rgb(0 0 0 / 0.35);
 }
 
+/* No Google, o marcador é um elemento comum (não um ícone do Leaflet). */
+.googlePin {
+  display: block;
+  width: 22px;
+  height: 22px;
+  transform: translateY(50%); /* centraliza o círculo no ponto exato */
+}
+
+.popup {
+  display: grid;
+  gap: 2px;
+  font-family: var(--font-sans);
+  color: #1f2a2e; /* balão do mapa é sempre claro */
+}
+
+.popup a {
+  color: #7a2e4d;
+}
+
 .wishlist {
   background: var(--color-wine);
 }

@@ -22,12 +22,21 @@ npm run build      # typecheck + build de produção
 ## Conectar ao Supabase
 
 1. Crie um projeto em supabase.com (plano Free, região São Paulo).
-2. SQL Editor → rode, nesta ordem, `001_init.sql`, `002_ratings_and_location.sql` e `003_categories.sql` (pasta `supabase/migrations`).
+2. SQL Editor → rode, nesta ordem, `001_init.sql`, `002_ratings_and_location.sql`, `003_categories.sql` e `004_google_place_id.sql` (pasta `supabase/migrations`).
 3. Authentication → URL Configuration: *Site URL* = endereço do app na Vercel; em *Redirect URLs*, adicione também `http://localhost:5173`.
 4. Local: copie `.env.example` para `.env` e preencha `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` (Project Settings → API Keys). Use só a chave **anon/publishable**, nunca a `service_role`.
 5. Vercel: Settings → Environment Variables com as mesmas duas variáveis → Redeploy (o Vite lê as variáveis no build).
 
 Com o Supabase configurado, o app pede login e os dados de exemplo não aparecem.
+
+## Google Maps (opcional)
+
+Com `VITE_GOOGLE_MAPS_API_KEY` e `VITE_GOOGLE_MAP_ID`, a busca de endereço vira autocompletar do Google Places (API nova) e o mapa passa a ser o do Google. Sem elas, busca e mapa usam o OpenStreetMap.
+
+- APIs a ativar no Google Cloud: **Places API (New)** e **Maps JavaScript API**
+- Restrinja a chave por site (`https://SEU-APP.vercel.app/*`, `http://localhost:5173/*`) e às duas APIs
+- Defina cotas diárias: o orçamento só avisa, quem bloqueia cobrança é a cota
+- Custo: a busca usa token de sessão e pede só campos da faixa *Essentials*
 
 ## Arquitetura
 

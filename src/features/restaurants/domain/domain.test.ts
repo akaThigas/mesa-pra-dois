@@ -25,6 +25,7 @@ function makeRestaurant(overrides: Partial<Restaurant> = {}): Restaurant {
     address: null,
     latitude: null,
     longitude: null,
+    googlePlaceId: null,
     visitedAt: null,
     createdBy: null,
     createdAt: '2026-01-01T12:00:00Z',

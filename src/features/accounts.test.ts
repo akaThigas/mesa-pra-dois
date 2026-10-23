@@ -8,6 +8,8 @@ import {
   toPlaceResult,
   type PlaceResult,
 } from './restaurants/data/geocoding';
+import { toPlaceResultFromGoogle } from './restaurants/data/googlePlaces';
+import { directionsUrl } from '@/shared/lib/maps';
 
 const CORREIOS = 'Rua Pirapora, 218 - Vila Mariana, São Paulo - SP, 04008-060';
 
@@ -34,6 +36,52 @@ describe('parseAddress / buildSearchAttempts (formato dos Correios)', () => {
 
   it('busca pelo nome do lugar continua sendo uma única tentativa', () => {
     expect(buildSearchAttempts(parseAddress('Ramen Kazoku'))).toEqual([{ kind: 'free', query: 'Ramen Kazoku' }]);
+  });
+});
+
+describe('toPlaceResultFromGoogle', () => {
+  const location = { lat: () => -23.5795, lng: () => -46.6433 };
+  const components = [
+    { longText: '218', types: ['street_number'] },
+    { longText: 'Rua Pirapora', types: ['route'] },
+    { longText: 'Vila Mariana', types: ['sublocality_level_1', 'sublocality', 'political'] },
+    { longText: 'São Paulo', types: ['administrative_area_level_2', 'political'] },
+  ];
+
+  it('extrai bairro, cidade, número e place_id, e tira o ", Brasil" do endereço', () => {
+    const place = toPlaceResultFromGoogle(
+      {
+        id: 'ChIJ123',
+        formattedAddress: 'R. Pirapora, 218 - Vila Mariana, São Paulo - SP, 04008-060, Brasil',
+        location,
+        addressComponents: components,
+      },
+      'Z Deli Sandwich Shop',
+    );
+
+    expect(place).toEqual({
+      label: 'Z Deli Sandwich Shop',
+      address: 'R. Pirapora, 218 - Vila Mariana, São Paulo - SP, 04008-060',
+      neighborhood: 'Vila Mariana',
+      city: 'São Paulo',
+      latitude: -23.5795,
+      longitude: -46.6433,
+      hasHouseNumber: true,
+      googlePlaceId: 'ChIJ123',
+    });
+  });
+
+  it('sem localização não serve para o mapa', () => {
+    expect(toPlaceResultFromGoogle({ id: 'x', location: null }, 'X')).toBeNull();
+  });
+});
+
+describe('directionsUrl', () => {
+  it('com place_id abre o estabelecimento exato; sem ele, usa as coordenadas', () => {
+    expect(directionsUrl(-23.5, -46.6, { name: 'Z Deli', googlePlaceId: 'ChIJ123' })).toBe(
+      'https://www.google.com/maps/dir/?api=1&destination=Z+Deli&destination_place_id=ChIJ123',
+    );
+    expect(directionsUrl(-23.5, -46.6)).toBe('https://www.google.com/maps/dir/?api=1&destination=-23.5,-46.6');
   });
 });
 

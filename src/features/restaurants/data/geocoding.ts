@@ -20,6 +20,8 @@ export interface PlaceResult {
   hasHouseNumber: boolean;
   /** true quando a pessoa digitou um número que não foi encontrado: o pin fica na rua */
   approximate?: boolean;
+  /** Identificador do Google (só quando a busca foi feita pelo Google) */
+  googlePlaceId?: string | null;
 }
 
 /** Endereço digitado, separado em partes. */

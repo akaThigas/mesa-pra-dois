@@ -30,6 +30,7 @@ export interface RestaurantRow {
   address: string | null;
   latitude: number | null;
   longitude: number | null;
+  google_place_id?: string | null; // opcional: coluna da migração 004
   visited_at: string | null;
   created_by: string | null;
   created_at: string;
@@ -66,6 +67,7 @@ export function toRestaurantFields(row: RestaurantRow): RestaurantFields {
     address: row.address,
     latitude: row.latitude,
     longitude: row.longitude,
+    googlePlaceId: row.google_place_id ?? null,
     visitedAt: row.visited_at,
     createdBy: row.created_by,
     createdAt: row.created_at,
@@ -102,6 +104,7 @@ const FIELD_TO_COLUMN = {
   address: 'address',
   latitude: 'latitude',
   longitude: 'longitude',
+  googlePlaceId: 'google_place_id',
   visitedAt: 'visited_at',
 } as const satisfies Record<keyof NewRestaurant, keyof RestaurantRow>;
 

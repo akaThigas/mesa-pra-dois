@@ -66,6 +66,7 @@ export function createInMemoryRestaurantRepository(
         address: null,
         latitude: null,
         longitude: null,
+        googlePlaceId: null,
         visitedAt: null,
         createdBy: currentUserId,
         createdAt: timestamp,

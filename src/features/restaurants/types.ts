@@ -58,6 +58,8 @@ export interface Restaurant {
   address: string | null;
   latitude: number | null;
   longitude: number | null;
+  /** Lugar exato no Google (quando o endereço veio da busca do Google) */
+  googlePlaceId: string | null;
   /** Data no formato YYYY-MM-DD */
   visitedAt: string | null;
   createdBy: string | null;
@@ -80,6 +82,7 @@ type EditableFields = Pick<
   | 'address'
   | 'latitude'
   | 'longitude'
+  | 'googlePlaceId'
   | 'visitedAt'
 >;
 
