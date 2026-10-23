@@ -79,6 +79,11 @@ export function toRestaurant(row: RestaurantWithRatingsRow): Restaurant {
   };
 }
 
+/** Só os campos da tabela restaurants (as notas vêm da tabela ratings). */
+export function withoutRatings({ ratings: _ratings, ...fields }: Restaurant): RestaurantFields {
+  return fields;
+}
+
 const FIELD_TO_COLUMN = {
   coupleId: 'couple_id',
   name: 'name',
