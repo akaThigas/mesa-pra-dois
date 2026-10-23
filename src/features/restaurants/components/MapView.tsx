@@ -12,6 +12,8 @@ import styles from './MapView.module.css';
 interface MapViewProps {
   restaurants: Restaurant[];
   status: RestaurantStatus;
+  /** Abre o formulário para completar o endereço de quem está sem pin. */
+  onAddAddress: (restaurant: Restaurant) => void;
 }
 
 /** Centro padrão quando ainda não há nenhum pin (centro de São Paulo). */
@@ -48,9 +50,9 @@ function FitToPins({ points }: { points: LatLng[] }) {
  * Export default porque esta tela é carregada sob demanda (React.lazy):
  * o Leaflet (~150 KB) só é baixado quando alguém abre o mapa.
  */
-export default function MapView({ restaurants, status }: MapViewProps) {
+export default function MapView({ restaurants, status, onAddAddress }: MapViewProps) {
   const located = useMemo(() => restaurants.filter(hasCoordinates), [restaurants]);
-  const missingCount = restaurants.length - located.length;
+  const missing = useMemo(() => restaurants.filter((restaurant) => !hasCoordinates(restaurant)), [restaurants]);
   const icon = useMemo(() => pinIcon(status), [status]);
 
   return (
@@ -82,12 +84,24 @@ export default function MapView({ restaurants, status }: MapViewProps) {
         ))}
       </MapContainer>
 
-      {missingCount > 0 && (
-        <p className={styles.note}>
-          {missingCount === 1
-            ? '1 restaurante não tem endereço e não aparece no mapa.'
-            : `${missingCount} restaurantes não têm endereço e não aparecem no mapa.`}
-        </p>
+      {/* Em vez de só avisar, mostra QUEM falta e leva direto à correção. */}
+      {missing.length > 0 && (
+        <section className={styles.missing} aria-labelledby="missing-title">
+          <h3 id="missing-title" className={styles.missingTitle}>
+            {missing.length === 1 ? '1 lugar sem endereço' : `${missing.length} lugares sem endereço`}
+          </h3>
+          <p className={styles.note}>Eles não aparecem no mapa até você buscar e escolher o endereço.</p>
+          <ul className={styles.missingList}>
+            {missing.map((restaurant) => (
+              <li key={restaurant.id} className={styles.missingItem}>
+                <span>{restaurant.name}</span>
+                <button type="button" className={styles.addAddress} onClick={() => onAddAddress(restaurant)}>
+                  Adicionar endereço
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </section>
   );

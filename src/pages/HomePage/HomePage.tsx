@@ -96,7 +96,7 @@ export function HomePage({ onSignOut }: HomePageProps) {
       <main id={panelId} role="tabpanel" className={styles.main}>
         {view === 'map' && loadState.kind === 'ready' ? (
           <Suspense fallback={<div className={styles.mapLoading}>Carregando mapa…</div>}>
-            <MapView restaurants={visibleRestaurants} status={filters.status} />
+            <MapView restaurants={visibleRestaurants} status={filters.status} onAddAddress={openEdit} />
           </Suspense>
         ) : (
           <RestaurantList
