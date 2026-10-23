@@ -1,13 +1,14 @@
 import { useCallback, useMemo, useState } from 'react';
 import {
   DEFAULT_FILTERS,
+  countByCategory,
   countByStatus,
   filterRestaurants,
   hasActiveFilters,
   type RestaurantFilters,
   type SortOption,
 } from '../domain/filters';
-import type { PriceLevel, Rating, Restaurant, RestaurantStatus } from '../types';
+import type { Category, PriceLevel, Rating, Restaurant, RestaurantStatus } from '../types';
 
 /**
  * Estado dos filtros + lista derivada.
@@ -18,6 +19,8 @@ export function useRestaurantFilters(restaurants: readonly Restaurant[]) {
   const [filters, setFilters] = useState<RestaurantFilters>(DEFAULT_FILTERS);
 
   const setSearch = useCallback((search: string) => setFilters((f) => ({ ...f, search })), []);
+
+  const setCategory = useCallback((category: Category | null) => setFilters((f) => ({ ...f, category })), []);
 
   const toggleVr = useCallback(() => setFilters((f) => ({ ...f, onlyAcceptsVr: !f.onlyAcceptsVr })), []);
 
@@ -54,13 +57,15 @@ export function useRestaurantFilters(restaurants: readonly Restaurant[]) {
   // a cada tecla é instantâneo — não precisa de debounce nem de query no banco.
   const visibleRestaurants = useMemo(() => filterRestaurants(restaurants, filters), [restaurants, filters]);
   const counts = useMemo(() => countByStatus(restaurants), [restaurants]);
+  const categoryCounts = useMemo(() => countByCategory(restaurants, filters.status), [restaurants, filters.status]);
 
   return {
     filters,
     visibleRestaurants,
     counts,
+    categoryCounts,
     isFiltering: hasActiveFilters(filters),
-    actions: { setSearch, toggleVr, togglePriceLevel, setMinRating, setSortBy, changeStatus, clearFilters },
+    actions: { setSearch, setCategory, toggleVr, togglePriceLevel, setMinRating, setSortBy, changeStatus, clearFilters },
   };
 }
 

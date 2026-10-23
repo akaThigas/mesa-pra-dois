@@ -5,7 +5,7 @@ import { googleSearchUrl } from '@/shared/lib/links';
 import { directionsUrl, hasCoordinates } from '@/shared/lib/maps';
 import { ratingOf } from '../domain/ratings';
 import { searchQueryFor } from '../domain/search';
-import type { Restaurant } from '../types';
+import { categoryLabel, type Restaurant } from '../types';
 import { CoupleRatings } from './CoupleRatings';
 import { PriceTag } from './PriceTag';
 import styles from './RestaurantCard.module.css';
@@ -28,7 +28,7 @@ export function describePlace({ cuisine, neighborhood }: Pick<Restaurant, 'cuisi
  */
 export const RestaurantCard = memo(function RestaurantCard({ restaurant, onOpenVisit, onEdit }: RestaurantCardProps) {
   const { currentUserId } = useCoupleSession();
-  const { id, name, status, priceLevel, amountSpent, acceptsVr, notes, visitedAt } = restaurant;
+  const { id, name, status, category, priceLevel, amountSpent, acceptsVr, notes, visitedAt } = restaurant;
 
   const isVisited = status === 'visited';
   const place = describePlace(restaurant);
@@ -51,7 +51,8 @@ export const RestaurantCard = memo(function RestaurantCard({ restaurant, onOpenV
       {isVisited && <CoupleRatings restaurant={restaurant} />}
 
       <div className={styles.meta}>
-        {acceptsVr && <span className={styles.vr}>Aceita VR</span>}
+        <span className={styles.category}>{categoryLabel(category)}</span>
+        {acceptsVr &&<span className={styles.vr}>Aceita VR</span>}
         {isVisited && visitedAt && (
           <span className={styles.date}>
             Fomos em <time dateTime={visitedAt}>{formatDate(visitedAt)}</time>

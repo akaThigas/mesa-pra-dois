@@ -21,6 +21,7 @@ function seed(index: number, data: SeedInput): Restaurant {
   return {
     id: `demo-${index}`,
     coupleId: DEMO_SESSION.coupleId,
+    category: 'restaurante',
     priceLevel: null,
     amountSpent: null,
     acceptsVr: false,
@@ -90,6 +91,7 @@ export const DEMO_RESTAURANTS: Restaurant[] = [
   seed(5, {
     name: 'Padaria Bella Vista',
     status: 'visited',
+    category: 'padaria',
     cuisine: 'Café da manhã',
     neighborhood: 'Bela Vista',
     latitude: -23.564,
@@ -115,5 +117,32 @@ export const DEMO_RESTAURANTS: Restaurant[] = [
     ],
     visitedAt: '2026-09-14',
     notes: 'Bom, mas a fila foi muito longa. Talvez delivery.',
+  }),
+  seed(7, {
+    name: 'Boteco da Esquina',
+    status: 'wishlist',
+    category: 'bar',
+    neighborhood: 'Vila Madalena',
+    latitude: -23.5568,
+    longitude: -46.6896,
+    priceLevel: 2,
+    notes: 'Happy hour até as 20h. Pedir o bolinho de mandioca.',
+  }),
+  seed(8, {
+    name: 'Doceria Açúcar Mascavo',
+    status: 'visited',
+    category: 'doceria',
+    neighborhood: 'Perdizes',
+    latitude: -23.5365,
+    longitude: -46.6789,
+    priceLevel: 2,
+    amountSpent: 38,
+    acceptsVr: true,
+    ratings: [
+      { profileId: DEMO_ME, rating: 5 },
+      { profileId: DEMO_PARTNER, rating: 4 },
+    ],
+    visitedAt: '2026-10-04',
+    notes: 'Bolo de pistache. Esgota cedo no sábado.',
   }),
 ];

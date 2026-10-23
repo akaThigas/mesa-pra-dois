@@ -55,6 +55,7 @@ export function createInMemoryRestaurantRepository(
       const timestamp = now();
       const restaurant: Restaurant = {
         id: crypto.randomUUID(),
+        category: 'restaurante',
         priceLevel: null,
         amountSpent: null,
         acceptsVr: false,

@@ -2,13 +2,16 @@ import { useId, useState, type FormEvent } from 'react';
 import { useCoupleSession } from '@/features/couple/CoupleSessionContext';
 import { BottomSheet, sheetStyles as form } from '@/shared/ui/BottomSheet';
 import { Chip } from '@/shared/ui/Chip';
-import type { NewRestaurant, PriceLevel, Restaurant, RestaurantPatch, RestaurantStatus } from '../types';
-import { PRICE_LEVELS, STATUS_LABEL } from '../types';
+import type { Category, NewRestaurant, PriceLevel, Restaurant, RestaurantPatch, RestaurantStatus } from '../types';
+import { CATEGORIES, PRICE_LEVELS, STATUS_LABEL } from '../types';
 import { AddressSearch, type SelectedPlace } from './AddressSearch';
 import styles from './RestaurantFormSheet.module.css';
 
 /** null = fechado · create = novo na aba atual · edit = alterar existente */
-export type RestaurantFormTarget = { mode: 'create'; status: RestaurantStatus } | { mode: 'edit'; restaurant: Restaurant } | null;
+export type RestaurantFormTarget =
+  | { mode: 'create'; status: RestaurantStatus; category: Category }
+  | { mode: 'edit'; restaurant: Restaurant }
+  | null;
 
 interface RestaurantFormSheetProps {
   target: RestaurantFormTarget;
@@ -21,7 +24,7 @@ interface RestaurantFormSheetProps {
 export function RestaurantFormSheet({ target, onClose, ...actions }: RestaurantFormSheetProps) {
   const titleId = useId();
   // key: cada abertura começa com o formulário limpo (ou com os dados daquele restaurante).
-  const formKey = target?.mode === 'edit' ? target.restaurant.id : `new-${target?.status}`;
+  const formKey = target?.mode === 'edit' ? target.restaurant.id : `new-${target?.status}-${target?.category}`;
 
   return (
     <BottomSheet open={target !== null} onClose={onClose} labelledBy={titleId}>
@@ -40,6 +43,9 @@ function RestaurantForm({ target, titleId, onClose, onCreate, onUpdate, onDelete
   const editing = target.mode === 'edit' ? target.restaurant : null;
 
   const [name, setName] = useState(editing?.name ?? '');
+  const [category, setCategory] = useState<Category>(
+    editing?.category ?? (target.mode === 'create' ? target.category : 'restaurante'),
+  );
   const [cuisine, setCuisine] = useState(editing?.cuisine ?? '');
   const [neighborhood, setNeighborhood] = useState(editing?.neighborhood ?? '');
   const [priceLevel, setPriceLevel] = useState<PriceLevel | null>(editing?.priceLevel ?? null);
@@ -68,10 +74,11 @@ function RestaurantForm({ target, titleId, onClose, onCreate, onUpdate, onDelete
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!name.trim()) return setError('Dê um nome ao restaurante.');
+    if (!name.trim()) return setError('Dê um nome ao lugar.');
 
     const values = {
       name: name.trim(),
+      category,
       cuisine: cuisine.trim() || null,
       neighborhood: neighborhood.trim() || null,
       priceLevel,
@@ -99,7 +106,7 @@ function RestaurantForm({ target, titleId, onClose, onCreate, onUpdate, onDelete
       <div className={form.grip} aria-hidden="true" />
       <div>
         <h2 id={titleId} className={form.title}>
-          {editing ? `Editar ${editing.name}` : 'Novo restaurante'}
+          {editing ? `Editar ${editing.name}` : 'Novo lugar'}
         </h2>
         {!editing && target.mode === 'create' && (
           <p className={form.subtitle}>Vai para a lista “{STATUS_LABEL[target.status]}”.</p>
@@ -120,6 +127,17 @@ function RestaurantForm({ target, titleId, onClose, onCreate, onUpdate, onDelete
           required
         />
       </label>
+
+      <fieldset className={styles.fieldset}>
+        <legend className={form.label}>Tipo de lugar</legend>
+        <div className={styles.chips}>
+          {CATEGORIES.map(({ value, label }) => (
+            <Chip key={value} selected={category === value} onToggle={() => setCategory(value)}>
+              {label}
+            </Chip>
+          ))}
+        </div>
+      </fieldset>
 
       <div className={styles.row}>
         <label className={form.field}>
@@ -209,7 +227,7 @@ function RestaurantForm({ target, titleId, onClose, onCreate, onUpdate, onDelete
           onClick={handleDelete}
           disabled={isSaving}
         >
-          {confirmDelete ? 'Toque de novo para excluir de vez' : 'Excluir restaurante'}
+          {confirmDelete ? 'Toque de novo para excluir de vez' : 'Excluir lugar'}
         </button>
       )}
     </form>

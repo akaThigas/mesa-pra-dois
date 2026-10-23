@@ -53,7 +53,7 @@ export function FilterBar({ filters, actions, resultCount, trailing }: FilterBar
 
       <div className={styles.summary}>
         <p className={styles.count} aria-live="polite">
-          {resultCount === 1 ? '1 restaurante' : `${resultCount} restaurantes`}
+          {resultCount === 1 ? '1 lugar' : `${resultCount} lugares`}
         </p>
 
         <div className={styles.trailing}>

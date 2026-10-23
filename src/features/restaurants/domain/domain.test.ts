@@ -4,7 +4,7 @@ import { googleSearchUrl } from '@/shared/lib/links';
 import { searchQueryFor } from './search';
 import type { Restaurant } from '../types';
 import { applyRestaurantChange } from './applyRestaurantChange';
-import { DEFAULT_FILTERS, countByStatus, filterRestaurants, hasActiveFilters } from './filters';
+import { DEFAULT_FILTERS, countByCategory, countByStatus, filterRestaurants, hasActiveFilters } from './filters';
 import { averageRating, ratingOf, setMemberRating } from './ratings';
 
 /** Factory de teste: só declara o que importa em cada caso. */
@@ -14,6 +14,7 @@ function makeRestaurant(overrides: Partial<Restaurant> = {}): Restaurant {
     coupleId: 'casal-1',
     name: 'Restaurante',
     status: 'wishlist',
+    category: 'restaurante',
     priceLevel: null,
     amountSpent: null,
     acceptsVr: false,
@@ -111,6 +112,32 @@ describe('filterRestaurants', () => {
     filterRestaurants(list, { ...DEFAULT_FILTERS, sortBy: 'name' });
 
     expect(list).toEqual(snapshot);
+  });
+});
+
+describe('categorias', () => {
+  it('filtra por categoria e combina com a lista (aba) atual', () => {
+    const bar = makeRestaurant({ category: 'bar' });
+    const visitedBar = makeRestaurant({ category: 'bar', status: 'visited' });
+    const bakery = makeRestaurant({ category: 'padaria' });
+
+    expect(filterRestaurants([bar, visitedBar, bakery], { ...DEFAULT_FILTERS, category: 'bar' })).toEqual([bar]);
+    expect(filterRestaurants([bar, visitedBar, bakery], { ...DEFAULT_FILTERS, category: null })).toHaveLength(2);
+  });
+
+  it('conta por categoria só dentro da lista atual', () => {
+    const list = [
+      makeRestaurant({ category: 'bar' }),
+      makeRestaurant({ category: 'bar' }),
+      makeRestaurant({ category: 'cafe', status: 'visited' }),
+    ];
+
+    expect(countByCategory(list, 'wishlist')).toEqual({ bar: 2 });
+    expect(countByCategory(list, 'visited')).toEqual({ cafe: 1 });
+  });
+
+  it('categoria escolhida conta como filtro ativo', () => {
+    expect(hasActiveFilters({ ...DEFAULT_FILTERS, category: 'doceria' })).toBe(true);
   });
 });
 

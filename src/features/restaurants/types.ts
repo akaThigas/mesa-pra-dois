@@ -1,4 +1,26 @@
 export type RestaurantStatus = 'wishlist' | 'visited';
+
+/** Tipo de lugar. Os valores batem com o CHECK da migração 003. */
+export type Category = 'restaurante' | 'bar' | 'cafe' | 'padaria' | 'doceria' | 'sorveteria' | 'outro';
+
+/** Ordem de exibição + rótulos no singular (etiqueta) e no plural (aba). */
+export const CATEGORIES: readonly { value: Category; label: string; plural: string }[] = [
+  { value: 'restaurante', label: 'Restaurante', plural: 'Restaurantes' },
+  { value: 'bar', label: 'Bar', plural: 'Bares' },
+  { value: 'cafe', label: 'Café', plural: 'Cafés' },
+  { value: 'padaria', label: 'Padaria', plural: 'Padarias' },
+  { value: 'doceria', label: 'Doceria', plural: 'Docerias' },
+  { value: 'sorveteria', label: 'Sorveteria', plural: 'Sorveterias' },
+  { value: 'outro', label: 'Outro', plural: 'Outros' },
+];
+
+export function categoryLabel(category: Category): string {
+  return CATEGORIES.find(({ value }) => value === category)?.label ?? 'Outro';
+}
+
+export function isCategory(value: unknown): value is Category {
+  return CATEGORIES.some((entry) => entry.value === value);
+}
 export type PriceLevel = 1 | 2 | 3 | 4;
 export type Rating = 1 | 2 | 3 | 4 | 5;
 
@@ -18,6 +40,7 @@ export interface Restaurant {
   coupleId: string;
   name: string;
   status: RestaurantStatus;
+  category: Category;
   priceLevel: PriceLevel | null;
   amountSpent: number | null;
   acceptsVr: boolean;
@@ -41,6 +64,7 @@ export type RestaurantFields = Omit<Restaurant, 'ratings'>;
 
 type EditableFields = Pick<
   Restaurant,
+  | 'category'
   | 'priceLevel'
   | 'amountSpent'
   | 'acceptsVr'

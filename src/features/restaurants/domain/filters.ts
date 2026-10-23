@@ -1,4 +1,4 @@
-import type { PriceLevel, Rating, Restaurant, RestaurantStatus } from '../types';
+import type { Category, PriceLevel, Rating, Restaurant, RestaurantStatus } from '../types';
 import { averageRating } from './ratings';
 
 /*
@@ -11,6 +11,8 @@ export type SortOption = 'recent' | 'rating' | 'priceAsc' | 'name';
 
 export interface RestaurantFilters {
   status: RestaurantStatus;
+  /** null = todas as categorias */
+  category: Category | null;
   search: string;
   onlyAcceptsVr: boolean;
   /** Vazio = todas as faixas */
@@ -22,6 +24,7 @@ export interface RestaurantFilters {
 
 export const DEFAULT_FILTERS: RestaurantFilters = {
   status: 'wishlist',
+  category: null,
   search: '',
   onlyAcceptsVr: false,
   priceLevels: [],
@@ -48,6 +51,11 @@ const byStatus =
   (status: RestaurantStatus): Predicate =>
   (restaurant) =>
     restaurant.status === status;
+
+const byCategory =
+  (category: Category | null): Predicate =>
+  (restaurant) =>
+    category === null || restaurant.category === category;
 
 const bySearch = (search: string): Predicate => {
   const term = normalizeText(search);
@@ -92,6 +100,7 @@ export function filterRestaurants(
 ): Restaurant[] {
   const predicates: Predicate[] = [
     byStatus(filters.status),
+    byCategory(filters.category),
     bySearch(filters.search),
     byVr(filters.onlyAcceptsVr),
     byPriceLevels(filters.priceLevels),
@@ -111,9 +120,22 @@ export function countByStatus(restaurants: readonly Restaurant[]): Record<Restau
   );
 }
 
-/** Há algum filtro "estreitando" a lista? (aba e ordenação não contam) */
+/** Quantos lugares de cada categoria existem na lista (aba) atual. */
+export function countByCategory(
+  restaurants: readonly Restaurant[],
+  status: RestaurantStatus,
+): Partial<Record<Category, number>> {
+  const counts: Partial<Record<Category, number>> = {};
+  for (const { status: itemStatus, category } of restaurants) {
+    if (itemStatus === status) counts[category] = (counts[category] ?? 0) + 1;
+  }
+  return counts;
+}
+
+/** Há algum filtro "estreitando" a lista? (lista e ordenação não contam) */
 export function hasActiveFilters(filters: RestaurantFilters): boolean {
   return (
+    filters.category !== null ||
     filters.search.trim() !== '' ||
     filters.onlyAcceptsVr ||
     filters.priceLevels.length > 0 ||

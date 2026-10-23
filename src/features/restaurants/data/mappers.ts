@@ -1,4 +1,5 @@
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import { isCategory } from '../types';
 import type {
   NewRestaurant,
   PriceLevel,
@@ -19,6 +20,7 @@ export interface RestaurantRow {
   couple_id: string;
   name: string;
   status: RestaurantStatus;
+  category: string;
   price_level: number | null;
   amount_spent: number | string | null; // numeric pode chegar como string
   accepts_vr: boolean;
@@ -53,6 +55,8 @@ export function toRestaurantFields(row: RestaurantRow): RestaurantFields {
     coupleId: row.couple_id,
     name: row.name,
     status: row.status,
+    // Valor desconhecido (ou coluna ausente) vira 'restaurante': o app nunca quebra por isso.
+    category: isCategory(row.category) ? row.category : 'restaurante',
     priceLevel: row.price_level as PriceLevel | null,
     amountSpent: row.amount_spent === null ? null : Number(row.amount_spent),
     acceptsVr: row.accepts_vr,
@@ -88,6 +92,7 @@ const FIELD_TO_COLUMN = {
   coupleId: 'couple_id',
   name: 'name',
   status: 'status',
+  category: 'category',
   priceLevel: 'price_level',
   amountSpent: 'amount_spent',
   acceptsVr: 'accepts_vr',

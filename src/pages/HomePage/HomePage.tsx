@@ -1,6 +1,7 @@
 import { lazy, Suspense, useCallback, useId, useState } from 'react';
 import { useCoupleSession } from '@/features/couple/CoupleSessionContext';
 import { InviteBanner } from '@/features/couple/InviteBanner';
+import { CategoryTabs } from '@/features/restaurants/components/CategoryTabs';
 import { FilterBar } from '@/features/restaurants/components/FilterBar';
 import { ListTabs } from '@/features/restaurants/components/ListTabs';
 import { RestaurantFormSheet, type RestaurantFormTarget } from '@/features/restaurants/components/RestaurantFormSheet';
@@ -40,7 +41,7 @@ export function HomePage({ onSignOut }: HomePageProps) {
   const [formTarget, setFormTarget] = useState<RestaurantFormTarget>(null);
 
   const { restaurants, loadState, retry } = useRestaurants(coupleId);
-  const { filters, visibleRestaurants, counts, isFiltering, actions } = useRestaurantFilters(restaurants);
+  const { filters, visibleRestaurants, counts, categoryCounts, isFiltering, actions } = useRestaurantFilters(restaurants);
   const { createRestaurant, updateRestaurant, removeRestaurant, recordVisit } = useRestaurantActions();
 
   const closeVisit = useCallback(() => setVisiting(null), []);
@@ -83,6 +84,7 @@ export function HomePage({ onSignOut }: HomePageProps) {
           onChange={actions.setSearch}
         />
         <ListTabs active={filters.status} counts={counts} onChange={actions.changeStatus} panelId={panelId} />
+        <CategoryTabs active={filters.category} counts={categoryCounts} onChange={actions.setCategory} />
         <FilterBar
           filters={filters}
           actions={actions}
@@ -113,7 +115,10 @@ export function HomePage({ onSignOut }: HomePageProps) {
       <button
         type="button"
         className={styles.fab}
-        onClick={() => setFormTarget({ mode: 'create', status: filters.status })}
+        // Está na aba "Bares"? O novo lugar já vem marcado como bar.
+        onClick={() =>
+          setFormTarget({ mode: 'create', status: filters.status, category: filters.category ?? 'restaurante' })
+        }
       >
         <span aria-hidden="true" className={styles.fabPlus}>
           +
